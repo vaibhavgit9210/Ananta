@@ -89,11 +89,33 @@ async function askWorkersAI(env, model, history) {
   const j = await env.AI.run(model, {
     messages: [{ role: "system", content: SYSTEM }, ...history],
     max_tokens: MAX_TOKENS,
-    temperature: 0.7,
+    temperature: 0.6,
   });
   const text = typeof j === "string" ? j : j.response;
   if (!text) throw new Error(`workers-ai ${model} empty`);
   return text;
+}
+
+// Quantized models occasionally melt down into multilingual token salad.
+// Catch the signatures so a corrupt reply cascades to the next model
+// instead of reaching the user.
+function garbled(text) {
+  if (text.includes("�")) return "replacement-char";
+  if (/([^\s\w])\1{9,}/.test(text)) return "punct-run"; // e.g. /**********
+  // a sane reply uses at most one non-Latin script (a quoted shloka or Greek
+  // phrase); token salad sprays several at once
+  const SCRIPTS = [/[Ѐ-ӿ]/, /[؀-ۿ]/, /[一-鿿]/, /[가-힯]/, /[Ͱ-Ͽ]/, /[ऀ-ॿ]/, /[぀-ヿ]/];
+  if (SCRIPTS.filter((re) => re.test(text)).length >= 3) return "mixed-script";
+  const nonAscii = (text.match(/[^\x00-\x7F‐-‧‘-”]/g) || []).length;
+  if (nonAscii / text.length > 0.25) return "mixed-script";
+  const words = text.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
+  if (words.length > 40) {
+    const freq = {};
+    let top = 0;
+    for (const w of words) { freq[w] = (freq[w] || 0) + 1; if (freq[w] > top) top = freq[w]; }
+    if (top / words.length > 0.15) return "token-loop";
+  }
+  return null;
 }
 
 function corsHeaders(origin) {
@@ -135,11 +157,14 @@ export default {
     if (!(await bump(env, `ip:${ip}:${day}`, PER_IP_PER_DAY)) || !(await bump(env, `global:${day}`, GLOBAL_PER_DAY)))
       return new Response(JSON.stringify({ busy: true, limit: true }), { status: 429, headers });
 
-    const chain = [];
+    let chain = [];
     if (env.GROQ_API_KEY) chain.push({ kind: "groq", model: "llama-3.3-70b-versatile" });
     if (env.GEMINI_API_KEY) chain.push({ kind: "gemini", model: "gemini-3.5-flash" });
     chain.push({ kind: "cf", model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast" });
+    chain.push({ kind: "cf", model: "@cf/meta/llama-4-scout-17b-16e-instruct" });
     chain.push({ kind: "cf", model: "@cf/meta/llama-3.1-8b-instruct" });
+    if (body.debug && body.model)
+      chain = [{ kind: String(body.model).startsWith("@cf/") ? "cf" : "groq", model: String(body.model) }];
 
     const errs = [];
     for (const step of chain) {
@@ -151,6 +176,8 @@ export default {
               ? await askGemini(env, step.model, history)
               : await askWorkersAI(env, step.model, history);
         if (!text || text.trim().length < 2) throw new Error(`${step.model} empty`);
+        const bad = garbled(text);
+        if (bad) throw new Error(`${step.model} garbled: ${bad}`);
         return new Response(
           JSON.stringify({ text: text.trim(), model: step.model, ...(body.debug ? { errs } : {}) }),
           { headers }

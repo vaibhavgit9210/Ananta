@@ -1,0 +1,17 @@
+name = "ananta-brain"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "LIMITS"
+id = "8744b53fe45e4ed59adf563185f59cb8"
+
+# Secrets (set via `npx wrangler secret put <NAME>`, never in this file):
+#   IP_SALT        — required; random string mixed into IP hashes for rate-limit keys
+#   GROQ_API_KEY   — OPTIONAL; console.groq.com — tried first when present
+#   GEMINI_API_KEY — OPTIONAL; aistudio.google.com — tried second when present
+# Without the optional keys the worker runs entirely on Cloudflare Workers AI
+# (free tier, no key needed) — the [ai] binding above.

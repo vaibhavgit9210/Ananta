@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ananta — endless counsel</title>
+<meta name="description" content="A quiet place to think with the Gita, Homer, Plato, Aristotle and the Stoics. Free, no signup.">
+<style>
+  :root{
+    --bg:#0d0b14; --bg2:#131020; --panel:#171327; --line:#2a2440;
+    --ink:#e8e2d6; --ink-dim:#9d95a8; --gold:#c9a227; --gold-soft:#e3c463;
+    --user:#221c38; --max-w:720px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif;
+    display:flex; overflow:hidden;
+  }
+  ::selection{background:#3a2f60}
+
+  /* ---------- sidebar ---------- */
+  #side{
+    width:280px; flex:0 0 auto; background:var(--bg2); border-right:1px solid var(--line);
+    display:flex; flex-direction:column; transition:transform .25s ease;
+  }
+  #side header{padding:20px 18px 14px; border-bottom:1px solid var(--line)}
+  #wordmark{font-family:Georgia, "Iowan Old Style", serif; font-size:26px; letter-spacing:.12em; color:var(--gold-soft)}
+  #wordmark .dev{display:block; font-size:13px; letter-spacing:.35em; color:var(--ink-dim); margin-top:2px}
+  #tagline{font-size:12px; color:var(--ink-dim); margin-top:8px; line-height:1.5}
+  #newBtn{
+    margin:14px 16px 6px; padding:10px 12px; border:1px solid var(--gold); border-radius:8px;
+    background:transparent; color:var(--gold-soft); font-size:14px; cursor:pointer; text-align:left;
+  }
+  #newBtn:hover{background:rgba(201,162,39,.08)}
+  #threads{flex:1; overflow-y:auto; padding:8px 10px 20px}
+  .thread{
+    display:flex; align-items:center; gap:8px; padding:10px 8px 10px 12px; border-radius:8px;
+    cursor:pointer; color:var(--ink-dim); font-size:14px;
+  }
+  .thread.active{background:var(--panel); color:var(--ink)}
+  .thread:hover{background:var(--panel)}
+  .thread .t{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .thread .n{font-size:11px; color:var(--ink-dim); flex:0 0 auto}
+  .thread .del{
+    flex:0 0 auto; border:none; background:none; color:var(--ink-dim); font-size:15px;
+    cursor:pointer; padding:2px 6px; border-radius:6px; visibility:hidden;
+  }
+  .thread:hover .del{visibility:visible}
+  .thread .del:hover{color:#e07a6a}
+  #sideFoot{padding:12px 18px; border-top:1px solid var(--line); font-size:11px; color:var(--ink-dim); line-height:1.6}
+  #sideFoot a{color:var(--ink-dim)}
+
+  /* ---------- main ---------- */
+  #main{flex:1; display:flex; flex-direction:column; min-width:0}
+  #topbar{
+    display:none; align-items:center; gap:12px; padding:12px 16px;
+    border-bottom:1px solid var(--line); background:var(--bg2);
+  }
+  #menuBtn{border:1px solid var(--line); background:none; color:var(--ink); font-size:18px; padding:4px 12px; border-radius:8px; cursor:pointer}
+  #topTitle{font-family:Georgia, serif; letter-spacing:.15em; color:var(--gold-soft)}
+
+  #scroll{flex:1; overflow-y:auto; scroll-behavior:smooth}
+  #feed{max-width:var(--max-w); margin:0 auto; padding:32px 20px 24px; display:flex; flex-direction:column; gap:22px}
+
+  .msg.user{align-self:flex-end; max-width:85%; background:var(--user); border:1px solid var(--line);
+    border-radius:14px 14px 4px 14px; padding:10px 14px; white-space:pre-wrap; overflow-wrap:break-word}
+  .msg.bot{align-self:stretch; font-family:Georgia, "Iowan Old Style", serif; font-size:17px; line-height:1.7}
+  .msg.bot .mark{color:var(--gold); font-size:13px; letter-spacing:.3em; display:block; margin-bottom:6px}
+  .msg.bot p{margin:0 0 12px}
+  .msg.bot p:last-child{margin-bottom:0}
+  .msg.bot blockquote{border-left:2px solid var(--gold); margin:0 0 12px; padding:2px 0 2px 14px; color:var(--gold-soft); font-style:italic}
+  .msg.bot em{color:var(--gold-soft)}
+
+  #thinking{display:none; align-self:flex-start; color:var(--ink-dim); font-style:italic; font-family:Georgia, serif}
+  #thinking.on{display:block}
+  #thinking .d{display:inline-block; animation:pulse 1.4s infinite}
+  #thinking .d:nth-child(2){animation-delay:.2s} #thinking .d:nth-child(3){animation-delay:.4s}
+  @keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+
+  /* welcome */
+  #welcome{max-width:var(--max-w); margin:0 auto; padding:9vh 24px 40px; text-align:center}
+  #welcome .glyph{font-family:Georgia, serif; font-size:52px; color:var(--gold); line-height:1}
+  #welcome h1{font-family:Georgia, serif; font-weight:normal; letter-spacing:.2em; font-size:30px; margin:16px 0 10px; color:var(--gold-soft)}
+  #welcome .sub{color:var(--ink-dim); max-width:480px; margin:0 auto 34px; font-size:15px; line-height:1.7}
+  .chip{
+    display:block; width:100%; max-width:480px; margin:10px auto; padding:12px 16px; text-align:left;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; color:var(--ink);
+    font-size:14px; cursor:pointer; font-family:inherit; line-height:1.5;
+  }
+  .chip:hover{border-color:var(--gold)}
+  .chip .src{display:block; font-size:11px; color:var(--ink-dim); margin-top:3px; letter-spacing:.06em}
+
+  /* composer */
+  #composerWrap{border-top:1px solid var(--line); background:var(--bg2)}
+  #composer{max-width:var(--max-w); margin:0 auto; padding:14px 16px calc(14px + env(safe-area-inset-bottom)); display:flex; gap:10px; align-items:flex-end}
+  #input{
+    flex:1; resize:none; border:1px solid var(--line); background:var(--panel); color:var(--ink);
+    border-radius:12px; padding:11px 14px; font:inherit; line-height:1.45; max-height:140px; outline:none;
+  }
+  #input:focus{border-color:var(--gold)}
+  #sendBtn{
+    flex:0 0 auto; border:none; border-radius:12px; background:var(--gold); color:#1a1408;
+    font-size:15px; padding:11px 18px; cursor:pointer; font-weight:600;
+  }
+  #sendBtn:disabled{opacity:.4; cursor:default}
+  #meta{max-width:var(--max-w); margin:0 auto; padding:0 16px 10px; display:flex; justify-content:space-between; font-size:11px; color:var(--ink-dim)}
+  #notice{
+    display:none; max-width:var(--max-w); margin:0 auto; padding:10px 16px; font-size:13px; color:#e3b45f;
+  }
+  #notice.on{display:block}
+  #notice button{margin-left:10px; background:none; border:1px solid var(--gold); color:var(--gold-soft); border-radius:6px; padding:2px 10px; cursor:pointer; font-size:12px}
+
+  /* mobile */
+  #shade{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9}
+  @media (max-width:900px){
+    #side{position:fixed; z-index:10; height:100%; transform:translateX(-100%)}
+    body.side-open #side{transform:translateX(0)}
+    body.side-open #shade{display:block}
+    #topbar{display:flex}
+    #welcome{padding-top:6vh}
+  }
+</style>
+</head>
+<body>
+
+<div id="side">
+  <header>
+    <div id="wordmark">ANANTA<span class="dev">अनन्त</span></div>
+    <div id="tagline">endless counsel — the Gita, Homer, Plato, Aristotle, the Stoics, and the rest of the old voices.</div>
+  </header>
+  <button id="newBtn">✦ &nbsp;New thread</button>
+  <div id="threads"></div>
+  <div id="sideFoot">Free service — up to <b>30 messages per thread</b>, 10 saved threads. Conversations live only in this browser.</div>
+</div>
+<div id="shade"></div>
+
+<div id="main">
+  <div id="topbar">
+    <button id="menuBtn">☰</button>
+    <div id="topTitle">ANANTA</div>
+  </div>
+
+  <div id="scroll">
+    <div id="welcome">
+      <div class="glyph">❈</div>
+      <h1>ANANTA</h1>
+      <div class="sub">Ask anything you would ask a wise friend. Ananta answers with the combined counsel of the Bhagavad Gita, the Mahabharata, Homer, the Greek tragedians, Plato, Aristotle and the Stoics — honestly, tensions included.</div>
+      <button class="chip">How do I act well when the outcome isn't in my hands?<span class="src">Gita 2.47 · Epictetus</span></button>
+      <button class="chip">Was Odysseus a good man, or just a clever one?<span class="src">Odyssey · Nicomachean Ethics</span></button>
+      <button class="chip">What did Krishna actually tell Arjuna about fear and duty?<span class="src">Bhagavad Gita · Kurukshetra</span></button>
+      <button class="chip">What makes a life good, according to Aristotle — and would Plato agree?<span class="src">Nicomachean Ethics · The Republic</span></button>
+    </div>
+    <div id="feed" hidden>
+      <div id="thinking"><span class="d">●</span><span class="d">●</span><span class="d">●</span></div>
+    </div>
+  </div>
+
+  <div id="notice"></div>
+  <div id="composerWrap">
+    <div id="composer">
+      <textarea id="input" rows="1" placeholder="Ask Ananta…" maxlength="1200"></textarea>
+      <button id="sendBtn">Send</button>
+    </div>
+    <div id="meta"><span id="modelNote"></span><span id="counter"></span></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var ENDPOINT = "https://ananta-brain.vaibhavpro9210.workers.dev/chat";
+  var MAX_USER_MSGS = 30;   // per thread — free service
+  var MAX_THREADS  = 10;
+  var SEND_WINDOW  = 20;    // messages of context sent to the worker
+  var KEY = "ananta_v1";
+
+  var state = load();
+  var pending = false;
+
+  function load(){
+    try{
+      var s = JSON.parse(localStorage.getItem(KEY));
+      if (s && Array.isArray(s.threads)) return s;
+    }catch(e){}
+    return { threads: [], activeId: null };
+  }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function active(){
+    for (var i=0;i<state.threads.length;i++) if (state.threads[i].id===state.activeId) return state.threads[i];
+    return null;
+  }
+  function userCount(t){ var n=0; t.messages.forEach(function(m){ if(m.role==="user") n++; }); return n; }
+
+  /* ---------- rendering ---------- */
+  var $ = function(id){ return document.getElementById(id); };
+  var feed=$("feed"), welcome=$("welcome"), scroll=$("scroll"), input=$("input"),
+      sendBtn=$("sendBtn"), counter=$("counter"), notice=$("notice"),
+      threadsEl=$("threads"), thinking=$("thinking"), modelNote=$("modelNote");
+
+  function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function inline(s){
+    return s.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/\*([^*\n]+)\*/g,"<em>$1</em>");
+  }
+  function md(text){
+    var blocks = esc(text).split(/\n{2,}/), out="";
+    blocks.forEach(function(b){
+      var lines = b.split("\n");
+      var isQuote = lines.length && lines.every(function(l){ return /^\s*&gt;/.test(l) || !l.trim(); });
+      if (isQuote){
+        out += "<blockquote>" + inline(lines.map(function(l){ return l.replace(/^\s*&gt;\s?/,""); }).join("<br>")) + "</blockquote>";
+      } else {
+        out += "<p>" + inline(lines.join("<br>")) + "</p>";
+      }
+    });
+    return out;
+  }
+
+  function renderThreads(){
+    threadsEl.innerHTML = "";
+    state.threads.forEach(function(t){
+      var el = document.createElement("div");
+      el.className = "thread" + (t.id===state.activeId ? " active" : "");
+      var used = userCount(t);
+      el.innerHTML = '<span class="t"></span><span class="n">'+used+"/"+MAX_USER_MSGS+'</span><button class="del" title="Delete thread">×</button>';
+      el.querySelector(".t").textContent = t.title || "Untitled";
+      el.addEventListener("click", function(){ state.activeId = t.id; save(); renderAll(); closeSide(); });
+      el.querySelector(".del").addEventListener("click", function(ev){
+        ev.stopPropagation();
+        state.threads = state.threads.filter(function(x){ return x.id!==t.id; });
+        if (state.activeId===t.id) state.activeId = state.threads.length ? state.threads[0].id : null;
+        save(); renderAll();
+      });
+      threadsEl.appendChild(el);
+    });
+  }
+
+  function renderFeed(){
+    var t = active();
+    Array.prototype.slice.call(feed.querySelectorAll(".msg")).forEach(function(n){ n.remove(); });
+    if (!t || !t.messages.length){
+      welcome.hidden = false; feed.hidden = true; counter.textContent = ""; return;
+    }
+    welcome.hidden = true; feed.hidden = false;
+    t.messages.forEach(function(m){
+      var el = document.createElement("div");
+      el.className = "msg " + (m.role==="user" ? "user" : "bot");
+      if (m.role==="user") el.textContent = m.content;
+      else el.innerHTML = '<span class="mark">❈ ANANTA</span>' + md(m.content);
+      feed.insertBefore(el, thinking);
+    });
+    var used = userCount(t);
+    counter.textContent = used + " / " + MAX_USER_MSGS + " messages in this thread";
+    scroll.scrollTop = scroll.scrollHeight;
+  }
+
+  function renderComposer(){
+    var t = active();
+    var full = t && userCount(t) >= MAX_USER_MSGS;
+    input.disabled = pending || !!full;
+    sendBtn.disabled = pending || !!full;
+    input.placeholder = full
+      ? "This thread has reached its free limit — begin a new one."
+      : "Ask Ananta…";
+    if (full) showNotice("Every dialogue must end so another can begin — this thread is full. Start a new thread to continue.", false);
+  }
+
+  function renderAll(){ renderThreads(); renderFeed(); renderComposer(); }
+
+  function showNotice(text, withRetry){
+    notice.className = "on";
+    notice.textContent = text;
+    if (withRetry){
+      var b = document.createElement("button");
+      b.textContent = "Try again";
+      b.addEventListener("click", function(){ hideNotice(); ask(); });
+      notice.appendChild(b);
+    }
+  }
+  function hideNotice(){ notice.className = ""; notice.textContent = ""; }
+
+  /* ---------- actions ---------- */
+  function newThread(){
+    if (state.threads.length >= MAX_THREADS){
+      showNotice("Thread limit reached (" + MAX_THREADS + ") — delete an old thread from the list to make room.", false);
+      return null;
+    }
+    var t = { id: Math.random().toString(36).slice(2)+Date.now().toString(36), title: "", messages: [] };
+    state.threads.unshift(t);
+    state.activeId = t.id;
+    save();
+    return t;
+  }
+
+  function send(text){
+    text = (text||"").trim();
+    if (!text || pending) return;
+    hideNotice();
+    var t = active();
+    if (!t){ t = newThread(); if (!t) return; }
+    if (userCount(t) >= MAX_USER_MSGS){ renderComposer(); return; }
+    if (!t.title) t.title = text.slice(0, 48);
+    t.messages.push({ role:"user", content:text });
+    save();
+    input.value = ""; input.style.height = "auto";
+    renderAll();
+    ask();
+  }
+
+  function ask(){
+    var t = active();
+    if (!t || pending) return;
+    if (!t.messages.length || t.messages[t.messages.length-1].role !== "user") return;
+    pending = true;
+    thinking.className = "on";
+    renderComposer();
+    scroll.scrollTop = scroll.scrollHeight;
+
+    fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ history: t.messages.slice(-SEND_WINDOW) })
+    }).then(function(r){
+      return r.json().then(function(j){ return { status:r.status, j:j }; });
+    }).then(function(res){
+      pending = false; thinking.className = "";
+      if (res.j && res.j.text){
+        t.messages.push({ role:"assistant", content:res.j.text });
+        save(); renderAll();
+      } else if (res.status === 429){
+        showNotice(res.j && res.j.limit
+          ? "Today's free allowance is spent — Ananta rests. Return tomorrow; the thread will be here."
+          : "Too many questions at once — a short pause, then try again.", true);
+        renderComposer();
+      } else {
+        showNotice("All the free minds are busy at this moment. Wait a little, then try again.", true);
+        renderComposer();
+      }
+    }).catch(function(){
+      pending = false; thinking.className = "";
+      showNotice("Couldn't reach Ananta — check your connection and try again.", true);
+      renderComposer();
+    });
+  }
+
+  /* ---------- wiring ---------- */
+  sendBtn.addEventListener("click", function(){ send(input.value); });
+  input.addEventListener("keydown", function(e){
+    if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); send(input.value); }
+  });
+  input.addEventListener("input", function(){
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 140) + "px";
+  });
+  $("newBtn").addEventListener("click", function(){
+    hideNotice();
+    if (newThread()) renderAll();
+    closeSide();
+    input.focus();
+  });
+  Array.prototype.slice.call(document.querySelectorAll(".chip")).forEach(function(c){
+    c.addEventListener("click", function(){
+      send(c.childNodes[0].textContent);
+    });
+  });
+  $("menuBtn").addEventListener("click", function(){ document.body.classList.add("side-open"); });
+  $("shade").addEventListener("click", closeSide);
+  function closeSide(){ document.body.classList.remove("side-open"); }
+
+  /* ---------- screenshot hooks (not saved) ---------- */
+  if (location.hash.indexOf("shot=chat") !== -1){
+    state = { threads: [{ id:"demo", title:"On acting without attachment", messages: [
+      { role:"user", content:"How do I act well when the outcome isn't in my hands?" },
+      { role:"assistant", content:"Krishna's answer to Arjuna is the sharpest ever given: *you have a right to your actions, never to the fruits of your actions* (Gita 2.47). The work is yours; the result belongs to a thousand causes you don't control. Anxiety comes from claiming ownership of the second while neglecting the first.\n\nEpictetus, a slave in Rome centuries later, drew the same line without ever reading the Gita: some things are up to us — judgment, effort, intention — and some are not. Peace is refusing to stake your worth on the wrong side of that line.\n\nWhat outcome are you gripping right now that was never yours to hold?" }
+    ]}], activeId:"demo" };
+    save = function(){};
+  }
+
+  renderAll();
+})();
+</script>
+
+<script>
+(function(){
+  if (location.protocol === "file:" || location.hostname === "localhost") return;
+  var EP = "https://site-analytics.vaibhavpro9210.workers.dev/ping";
+  var sid = sessionStorage.getItem("va_sid");
+  if (!sid) { sid = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem("va_sid", sid); }
+  function send(kind){ try { navigator.sendBeacon(EP, new Blob([JSON.stringify({sid:sid, page:location.pathname, kind:kind})], {type:"text/plain"})); } catch(e){} }
+  send("load");
+  setInterval(function(){ if (document.visibilityState === "visible") send("beat"); }, 60000);
+})();
+</script>
+</body>
+</html>

@@ -44,6 +44,7 @@ Set with `cd worker && npx wrangler secret put GROQ_API_KEY`.
 
 - `index.html#shot=welcome` — welcome screen (default when no threads).
 - `index.html#shot=chat` — seeds an unsaved demo conversation for screenshots.
+- `index.html#shot=card` — opens the quote-card preview modal on a demo quote.
 - POST `{"history":[...], "debug":true}` to the worker to get the model-cascade errors back.
 
 ## Deploy

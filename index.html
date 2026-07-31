@@ -72,6 +72,23 @@
   .msg.bot p:last-child{margin-bottom:0}
   .msg.bot blockquote{border-left:2px solid var(--gold); margin:0 0 12px; padding:2px 0 2px 14px; color:var(--gold-soft); font-style:italic}
   .msg.bot em{color:var(--gold-soft)}
+  .msg.bot .qcbtn{display:inline-block; margin-top:10px; padding:4px 14px; font-family:inherit;
+    font-size:12px; letter-spacing:.12em; color:var(--gold-soft); background:transparent;
+    border:1px solid var(--line); border-radius:999px; cursor:pointer}
+  .msg.bot .qcbtn:hover{border-color:var(--gold)}
+
+  /* quote-card preview */
+  #qcmodal{position:fixed; inset:0; z-index:60; background:rgba(6,4,12,.85); display:none;
+    align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px}
+  #qcmodal.on{display:flex}
+  #qcmodal img, #qcmodal video{max-width:min(88vw,500px); max-height:64vh;
+    border:1px solid var(--line); border-radius:10px}
+  #qcmodal .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+  #qcmodal .row button{padding:8px 18px; font-family:inherit; font-size:14px; color:var(--gold-soft);
+    background:var(--panel); border:1px solid var(--gold); border-radius:8px; cursor:pointer}
+  #qcmodal .row button:disabled{opacity:.5; cursor:default}
+  #qchint{font-size:11px; color:var(--ink-dim)}
+  @media (hover:hover){ #qchint{display:none} }
 
   #thinking{display:none; align-self:flex-start; color:var(--ink-dim); font-style:italic; font-family:Georgia, serif}
   #thinking.on{display:block}
@@ -167,6 +184,18 @@
   </div>
 </div>
 
+<div id="qcmodal">
+  <img id="qcimg" alt="quote card">
+  <video id="qcvid" autoplay loop muted playsinline hidden></video>
+  <p id="qchint">press &amp; hold the image to save it to your gallery 📱</p>
+  <div class="row">
+    <button id="qcShare">📤 Share</button>
+    <button id="qcSave">⬇️ Save</button>
+    <button id="qcSpin">🎞 Spin video</button>
+    <button id="qcClose">✕ Close</button>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -247,7 +276,13 @@
       var el = document.createElement("div");
       el.className = "msg " + (m.role==="user" ? "user" : "bot");
       if (m.role==="user") el.textContent = m.content;
-      else el.innerHTML = '<span class="mark">❈ ANANTA</span>' + md(m.content);
+      else {
+        el.innerHTML = '<span class="mark">❈ ANANTA</span>' + md(m.content);
+        var qb = document.createElement("button");
+        qb.className = "qcbtn"; qb.textContent = "❈ quote card";
+        (function(text){ qb.addEventListener("click", function(){ showQuoteCard(text); }); })(m.content);
+        el.appendChild(qb);
+      }
       feed.insertBefore(el, thinking);
     });
     var used = userCount(t);
@@ -279,6 +314,139 @@
     }
   }
   function hideNotice(){ notice.className = ""; notice.textContent = ""; }
+
+  /* ---------- quote card ---------- */
+  var qcCanvas = null, qcURL = null, qcFile = null;
+  function plainText(s){
+    return String(s||"")
+      .replace(/```[\s\S]*?```/g, " ")
+      .replace(/[*_`#]+/g, "")
+      .replace(/^>\s?/gm, "")
+      .replace(/\s+/g, " ").trim();
+  }
+  function drawQuoteCard(text){
+    var c = document.createElement("canvas");
+    c.width = 1080; c.height = 1350;
+    var g = c.getContext("2d");
+    var bg = g.createLinearGradient(0, 0, 0, 1350);
+    bg.addColorStop(0, "#0d0b14"); bg.addColorStop(1, "#131020");
+    g.fillStyle = bg; g.fillRect(0, 0, 1080, 1350);
+    g.strokeStyle = "rgba(201,162,39,.55)"; g.lineWidth = 2;
+    g.strokeRect(46, 46, 988, 1258);
+    g.textAlign = "center";
+    g.fillStyle = "#c9a227"; g.font = "62px Georgia, serif";
+    g.fillText("❈", 540, 165);
+    g.font = "30px Georgia, serif"; g.fillStyle = "#e3c463";
+    g.fillText("A N A N T A", 540, 225);
+    // fit the quote: shrink font until it fits, else trim words with an ellipsis
+    var words = plainText(text).split(" ");
+    var boxW = 840, boxTop = 330, boxBottom = 1080, size, lines;
+    for (size = 54; size >= 34; size -= 4){
+      g.font = "italic " + size + "px Georgia, serif";
+      lines = [];
+      var line = "";
+      for (var i = 0; i < words.length; i++){
+        var t2 = line ? line + " " + words[i] : words[i];
+        if (g.measureText(t2).width > boxW && line){ lines.push(line); line = words[i]; }
+        else line = t2;
+      }
+      lines.push(line);
+      if (boxTop + lines.length * size * 1.55 <= boxBottom || size === 34) break;
+    }
+    var maxLines = Math.floor((boxBottom - boxTop) / (size * 1.55));
+    if (lines.length > maxLines){
+      lines = lines.slice(0, maxLines);
+      lines[maxLines-1] = lines[maxLines-1].replace(/\W*\w+$/, "") + " …";
+    }
+    g.fillStyle = "#e8e2d6";
+    var y = boxTop + size;
+    g.font = "120px Georgia, serif"; g.fillStyle = "rgba(201,162,39,.7)";
+    g.textAlign = "left"; g.fillText("“", 96, boxTop + 40);
+    g.textAlign = "center"; g.fillStyle = "#e8e2d6";
+    g.font = "italic " + size + "px Georgia, serif";
+    for (var j = 0; j < lines.length; j++){ g.fillText(lines[j], 540, y); y += size * 1.55; }
+    g.fillStyle = "#e3c463"; g.font = "38px Georgia, serif";
+    g.fillText("— Ananta", 540, y + 40);
+    g.fillStyle = "#9d95a8"; g.font = "30px Georgia, serif";
+    g.fillText("vaibhavkumar.is-a.dev/Ananta", 540, 1262);
+    return c;
+  }
+  function qcSetFile(blob, name){
+    qcFile = new File([blob], name, { type: blob.type });
+    $("qcShare").style.display =
+      (navigator.canShare && navigator.canShare({ files: [qcFile] })) ? "" : "none";
+  }
+  function showQuoteCard(text){
+    qcCanvas = drawQuoteCard(text);
+    qcURL = qcCanvas.toDataURL("image/png");
+    $("qcimg").src = qcURL; $("qcimg").hidden = false;
+    $("qcvid").hidden = true; $("qcvid").removeAttribute("src");
+    $("qcShare").style.display = "none";
+    $("qcSpin").disabled = false; $("qcSpin").textContent = "🎞 Spin video";
+    qcCanvas.toBlob(function(b){ qcSetFile(b, "ananta-quote.png"); }, "image/png");
+    $("qcmodal").className = "on";
+  }
+  function bestVideoMime(){
+    if (!window.MediaRecorder) return null;
+    var m = ["video/mp4;codecs=avc1.42E01E", "video/mp4", "video/webm;codecs=vp9", "video/webm"];
+    for (var i = 0; i < m.length; i++) if (MediaRecorder.isTypeSupported(m[i])) return m[i];
+    return null;
+  }
+  // 360° horizontal spin of the card, recorded as a silent looping video
+  function recordSpin(src, base, onDone, onFail){
+    var mime = bestVideoMime();
+    if (!mime) return onFail();
+    var c = document.createElement("canvas");
+    c.width = src.width; c.height = src.height;
+    var g = c.getContext("2d");
+    var rec, chunks = [];
+    try { rec = new MediaRecorder(c.captureStream(30), { mimeType: mime, videoBitsPerSecond: 6000000 }); }
+    catch(e){ return onFail(); }
+    rec.ondataavailable = function(e){ if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = function(){
+      var ext = mime.indexOf("mp4") > -1 ? "mp4" : "webm";
+      onDone(new Blob(chunks, { type: mime.split(";")[0] }), base + "." + ext, ext);
+    };
+    var DUR = 3600, t0 = performance.now();
+    rec.start(200);
+    (function frame(now){
+      var k = Math.min(1, (now - t0) / DUR);
+      var sx = Math.cos(k * Math.PI * 2);           // 1 → -1 → 1: one full turn
+      g.fillStyle = "#0d0b14"; g.fillRect(0, 0, c.width, c.height);
+      g.save();
+      g.translate(c.width / 2, 0);
+      g.scale(sx === 0 ? 0.01 : sx, 1);             // mirrored at the back — a coin spin
+      g.drawImage(src, -c.width / 2, 0);
+      g.restore();
+      g.fillStyle = "rgba(0,0,0," + (0.5 * (1 - Math.abs(sx))) + ")"; // edge-on shading
+      g.fillRect(0, 0, c.width, c.height);
+      if (k < 1) requestAnimationFrame(frame);
+      else setTimeout(function(){ rec.stop(); }, 250);
+    })(t0);
+  }
+  $("qcClose").addEventListener("click", function(){ $("qcmodal").className = ""; });
+  $("qcSave").addEventListener("click", function(){
+    var a = document.createElement("a");
+    if (!$("qcvid").hidden){ a.href = $("qcvid").src; a.download = qcFile.name; }
+    else { a.href = qcURL; a.download = "ananta-quote.png"; }
+    a.click();
+  });
+  $("qcShare").addEventListener("click", function(){
+    if (navigator.share) navigator.share({ files: [qcFile], title: "Ananta" }).catch(function(){});
+  });
+  $("qcSpin").addEventListener("click", function(){
+    var btn = $("qcSpin");
+    btn.disabled = true; btn.textContent = "recording…";
+    recordSpin(qcCanvas, "ananta-quote", function(blob, name){
+      var v = $("qcvid");
+      v.src = URL.createObjectURL(blob); v.hidden = false;
+      $("qcimg").hidden = true;
+      qcSetFile(blob, name);
+      btn.textContent = "🎞 done — it loops";
+    }, function(){
+      btn.disabled = false; btn.textContent = "video not supported here";
+    });
+  });
 
   /* ---------- actions ---------- */
   function newThread(){
@@ -378,6 +546,10 @@
   }
 
   renderAll();
+
+  if (location.hash.indexOf("shot=card") !== -1){
+    showQuoteCard("You have a right to your actions, never to the fruits of your actions. The work is yours; the result belongs to a thousand causes you don't control. Anxiety comes from claiming ownership of the second while neglecting the first.");
+  }
 })();
 </script>
 

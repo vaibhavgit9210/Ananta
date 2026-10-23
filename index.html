@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d0b14">
 <title>Ananta — endless counsel</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%23060a13%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2738%27%20text-anchor%3D%27middle%27%3E%E2%9C%B3%EF%B8%8F%3C%2Ftext%3E%3C%2Fsvg%3E">
 <meta name="description" content="A quiet place to think with the Gita, Homer, Plato, Aristotle and the Stoics. Free, no signup.">
@@ -11,82 +13,125 @@
     --bg:#0d0b14; --bg2:#131020; --panel:#171327; --line:#2a2440;
     --ink:#e8e2d6; --ink-dim:#9d95a8; --gold:#c9a227; --gold-soft:#e3c463;
     --user:#221c38; --max-w:720px;
+    /* glass, the macOS 26+ material: a translucent fill that blurs what is behind it, a bright top rim, a soft drop */
+    --glass:rgba(23,19,39,.55); --glass-solid:rgba(19,16,32,.86);
+    --blur:blur(24px) saturate(170%);
+    --rim:inset 0 .5px 0 rgba(255,255,255,.2), inset 0 0 0 .5px rgba(255,255,255,.07);
+    --drop:0 10px 30px rgba(0,0,0,.32), 0 1px 3px rgba(0,0,0,.22);
+    --hair:rgba(255,255,255,.08);
+    color-scheme:dark;
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{height:100%}
   body{
-    background:var(--bg); color:var(--ink);
-    font:16px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(900px 640px at -6% -14%, rgba(201,162,39,.075), transparent 62%),
+      radial-gradient(900px 720px at 106% 114%, rgba(112,86,196,.11), transparent 62%),
+      var(--bg);
+    color:var(--ink);
+    font:16px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
     display:flex; overflow:hidden;
   }
   ::selection{background:#3a2f60}
+  button:focus-visible{outline:2px solid rgba(227,196,99,.8); outline-offset:2px}
 
-  /* ---------- sidebar ---------- */
+  /* ---------- sidebar: a floating glass panel ---------- */
   #side{
-    width:280px; flex:0 0 auto; background:var(--bg2); border-right:1px solid var(--line);
-    display:flex; flex-direction:column; transition:transform .25s ease;
+    width:280px; flex:0 0 auto; display:flex; flex-direction:column; overflow:hidden;
+    margin:max(8px, env(safe-area-inset-top)) 0 max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    border-radius:20px; background:var(--glass); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    box-shadow:var(--rim), var(--drop);
+    transition:transform .28s cubic-bezier(.2,.8,.2,1);
   }
-  #side header{padding:20px 18px 14px; border-bottom:1px solid var(--line)}
+  #side header{padding:20px 18px 14px; border-bottom:.5px solid var(--hair)}
   #wordmark{font-family:Georgia, "Iowan Old Style", serif; font-size:26px; letter-spacing:.12em; color:var(--gold-soft)}
   #wordmark .dev{display:block; font-size:13px; letter-spacing:.35em; color:var(--ink-dim); margin-top:2px}
   #tagline{font-size:12px; color:var(--ink-dim); margin-top:8px; line-height:1.5}
   #newBtn{
-    margin:14px 16px 6px; padding:10px 12px; border:1px solid var(--gold); border-radius:8px;
-    background:transparent; color:var(--gold-soft); font-size:14px; cursor:pointer; text-align:left;
+    margin:14px 14px 6px; padding:10px 16px; border:0; border-radius:999px;
+    background:rgba(201,162,39,.12); color:var(--gold-soft); font-size:14px; font-weight:500; cursor:pointer; text-align:left;
+    box-shadow:inset 0 .5px 0 rgba(255,255,255,.14), inset 0 0 0 .5px rgba(201,162,39,.38);
+    transition:background-color .15s, transform .1s;
   }
-  #newBtn:hover{background:rgba(201,162,39,.08)}
-  #threads{flex:1; overflow-y:auto; padding:8px 10px 20px}
+  #newBtn:hover{background:rgba(201,162,39,.2)}
+  #newBtn:active{transform:scale(.97)}
+  #threads{flex:1; overflow-y:auto; padding:8px 8px 20px}
   .thread{
-    display:flex; align-items:center; gap:8px; padding:10px 8px 10px 12px; border-radius:8px;
-    cursor:pointer; color:var(--ink-dim); font-size:14px;
+    display:flex; align-items:center; gap:8px; padding:9px 6px 9px 12px; border-radius:12px;
+    cursor:pointer; color:var(--ink-dim); font-size:14px; transition:background-color .15s, color .15s;
   }
-  .thread.active{background:var(--panel); color:var(--ink)}
-  .thread:hover{background:var(--panel)}
+  .thread:hover{background:rgba(255,255,255,.06)}
+  .thread.active{background:rgba(255,255,255,.09); color:var(--ink); box-shadow:inset 0 .5px 0 rgba(255,255,255,.08)}
   .thread .t{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .thread .n{font-size:11px; color:var(--ink-dim); flex:0 0 auto}
   .thread .del{
-    flex:0 0 auto; border:none; background:none; color:var(--ink-dim); font-size:15px;
-    cursor:pointer; padding:2px 6px; border-radius:6px; visibility:hidden;
+    flex:0 0 auto; display:grid; place-items:center; width:24px; height:24px; padding:0; border:none; border-radius:50%;
+    background:none; color:var(--ink-dim); font-size:15px; cursor:pointer; visibility:hidden;
+    transition:background-color .15s, color .15s;
   }
   .thread:hover .del{visibility:visible}
-  .thread .del:hover{color:#e07a6a}
-  #sideFoot{padding:12px 18px; border-top:1px solid var(--line); font-size:11px; color:var(--ink-dim); line-height:1.6}
+  .thread .del:hover{color:#e07a6a; background:rgba(224,122,106,.14)}
+  #sideFoot{padding:12px 18px; border-top:.5px solid var(--hair); font-size:11px; color:var(--ink-dim); line-height:1.6}
   #sideFoot a{color:var(--ink-dim)}
 
   /* ---------- main ---------- */
   #main{flex:1; display:flex; flex-direction:column; min-width:0}
   #topbar{
-    display:none; align-items:center; gap:12px; padding:12px 16px;
-    border-bottom:1px solid var(--line); background:var(--bg2);
+    display:none; align-items:center; gap:12px;
+    padding:max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left));
   }
-  #menuBtn{border:1px solid var(--line); background:none; color:var(--ink); font-size:18px; padding:4px 12px; border-radius:8px; cursor:pointer}
+  #menuBtn{
+    display:grid; place-items:center; width:40px; height:40px; padding:0; border:0; border-radius:50%;
+    background:var(--glass); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    box-shadow:var(--rim), 0 4px 14px rgba(0,0,0,.25);
+    color:var(--ink); font-size:18px; cursor:pointer; transition:background-color .15s, transform .1s;
+  }
+  #menuBtn:hover{background:rgba(48,40,72,.7)}
+  #menuBtn:active{transform:scale(.94)}
   #topTitle{font-family:Georgia, serif; letter-spacing:.15em; color:var(--gold-soft)}
 
-  #scroll{flex:1; overflow-y:auto; scroll-behavior:smooth}
+  /* the feed fades out under the bars instead of ending on a hard edge */
+  #scroll{
+    flex:1; overflow-y:auto; scroll-behavior:smooth;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    mask-image:linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
   #feed{max-width:var(--max-w); margin:0 auto; padding:32px 20px 24px; display:flex; flex-direction:column; gap:22px}
 
-  .msg.user{align-self:flex-end; max-width:85%; background:var(--user); border:1px solid var(--line);
-    border-radius:14px 14px 4px 14px; padding:10px 14px; white-space:pre-wrap; overflow-wrap:break-word}
+  .msg.user{align-self:flex-end; max-width:85%; background:var(--user);
+    border-radius:20px 20px 6px 20px; padding:10px 16px; white-space:pre-wrap; overflow-wrap:break-word;
+    box-shadow:var(--rim), 0 4px 14px rgba(0,0,0,.18)}
   .msg.bot{align-self:stretch; font-family:Georgia, "Iowan Old Style", serif; font-size:17px; line-height:1.7}
   .msg.bot .mark{color:var(--gold); font-size:13px; letter-spacing:.3em; display:block; margin-bottom:6px}
   .msg.bot p{margin:0 0 12px}
   .msg.bot p:last-child{margin-bottom:0}
   .msg.bot blockquote{border-left:2px solid var(--gold); margin:0 0 12px; padding:2px 0 2px 14px; color:var(--gold-soft); font-style:italic}
   .msg.bot em{color:var(--gold-soft)}
-  .msg.bot .qcbtn{display:inline-block; margin-top:10px; padding:4px 14px; font-family:inherit;
-    font-size:12px; letter-spacing:.12em; color:var(--gold-soft); background:transparent;
-    border:1px solid var(--line); border-radius:999px; cursor:pointer}
-  .msg.bot .qcbtn:hover{border-color:var(--gold)}
+  .msg.bot .qcbtn{display:inline-block; margin-top:10px; padding:5px 15px; font-family:inherit;
+    font-size:12px; letter-spacing:.12em; color:var(--gold-soft); background:rgba(255,255,255,.05);
+    border:0; border-radius:999px; cursor:pointer;
+    box-shadow:inset 0 .5px 0 rgba(255,255,255,.12), inset 0 0 0 .5px rgba(201,162,39,.32);
+    transition:background-color .15s, transform .1s}
+  .msg.bot .qcbtn:hover{background:rgba(201,162,39,.14)}
+  .msg.bot .qcbtn:active{transform:scale(.97)}
 
   /* quote-card preview */
-  #qcmodal{position:fixed; inset:0; z-index:60; background:rgba(6,4,12,.85); display:none;
-    align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px}
+  #qcmodal{position:fixed; inset:0; z-index:60; background:rgba(6,4,12,.66);
+    -webkit-backdrop-filter:blur(14px) saturate(140%); backdrop-filter:blur(14px) saturate(140%); display:none;
+    align-items:center; justify-content:center; flex-direction:column; gap:14px;
+    padding:max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom))}
   #qcmodal.on{display:flex}
   #qcmodal img{max-width:min(88vw,500px); max-height:64vh;
-    border:1px solid var(--line); border-radius:10px}
+    border:.5px solid rgba(255,255,255,.14); border-radius:16px; box-shadow:0 30px 80px rgba(0,0,0,.55)}
   #qcmodal .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
-  #qcmodal .row button{padding:8px 18px; font-family:inherit; font-size:14px; color:var(--gold-soft);
-    background:var(--panel); border:1px solid var(--gold); border-radius:8px; cursor:pointer}
+  #qcmodal .row button{padding:9px 18px; font-family:inherit; font-size:14px; color:var(--gold-soft);
+    border:0; border-radius:999px; cursor:pointer;
+    background:var(--glass-solid); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    box-shadow:inset 0 .5px 0 rgba(255,255,255,.2), inset 0 0 0 .5px rgba(201,162,39,.42), 0 8px 24px rgba(0,0,0,.35);
+    transition:background-color .15s, transform .1s}
+  #qcmodal .row button:hover{background:rgba(44,36,66,.92)}
+  #qcmodal .row button:active{transform:scale(.97)}
   #qchint{font-size:11px; color:var(--ink-dim)}
   @media (hover:hover){ #qchint{display:none} }
 
@@ -103,40 +148,70 @@
   #welcome .sub{color:var(--ink-dim); max-width:480px; margin:0 auto 34px; font-size:15px; line-height:1.7}
   .chip{
     display:block; width:100%; max-width:480px; margin:10px auto; padding:12px 16px; text-align:left;
-    background:var(--panel); border:1px solid var(--line); border-radius:10px; color:var(--ink);
+    background:var(--glass); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border:0; border-radius:18px; box-shadow:var(--rim), 0 6px 20px rgba(0,0,0,.2); color:var(--ink);
     font-size:14px; cursor:pointer; font-family:inherit; line-height:1.5;
+    transition:box-shadow .2s, transform .2s;
   }
-  .chip:hover{border-color:var(--gold)}
+  .chip:hover{box-shadow:var(--rim), inset 0 0 0 1px rgba(201,162,39,.55), 0 10px 28px rgba(0,0,0,.28); transform:translateY(-1px)}
+  .chip:active{transform:scale(.98)}
   .chip .src{display:block; font-size:11px; color:var(--ink-dim); margin-top:3px; letter-spacing:.06em}
 
-  /* composer */
-  #composerWrap{border-top:1px solid var(--line); background:var(--bg2)}
-  #composer{max-width:var(--max-w); margin:0 auto; padding:14px 16px calc(14px + env(safe-area-inset-bottom)); display:flex; gap:10px; align-items:flex-end}
+  /* composer: one glass capsule holding the field and the send button */
+  #composerWrap{padding:6px max(12px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px, env(safe-area-inset-left))}
+  #composer{
+    max-width:var(--max-w); margin:0 auto; padding:6px 6px 6px 18px; display:flex; gap:10px; align-items:flex-end;
+    border-radius:26px; background:var(--glass); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    box-shadow:var(--rim), 0 10px 32px rgba(0,0,0,.35); transition:box-shadow .2s;
+  }
+  #composer:focus-within{box-shadow:var(--rim), inset 0 0 0 1px rgba(201,162,39,.7), 0 0 0 4px rgba(201,162,39,.16), 0 10px 32px rgba(0,0,0,.35)}
   #input{
-    flex:1; resize:none; border:1px solid var(--line); background:var(--panel); color:var(--ink);
-    border-radius:12px; padding:11px 14px; font:inherit; line-height:1.45; max-height:140px; outline:none;
+    flex:1; resize:none; border:0; background:transparent; color:var(--ink);
+    padding:8px 0; font:inherit; line-height:1.45; max-height:140px; outline:none;
   }
-  #input:focus{border-color:var(--gold)}
+  #input::placeholder{color:#8a8298}
   #sendBtn{
-    flex:0 0 auto; border:none; border-radius:12px; background:var(--gold); color:#1a1408;
-    font-size:15px; padding:11px 18px; cursor:pointer; font-weight:600;
+    flex:0 0 auto; height:40px; padding:0 20px; border:none; border-radius:999px; background:var(--gold); color:#1a1408;
+    font-size:15px; cursor:pointer; font-weight:600;
+    box-shadow:inset 0 .5px 0 rgba(255,255,255,.45), 0 4px 16px rgba(201,162,39,.26);
+    transition:background-color .15s, transform .1s, opacity .2s;
   }
-  #sendBtn:disabled{opacity:.4; cursor:default}
-  #meta{max-width:var(--max-w); margin:0 auto; padding:0 16px 10px; display:flex; justify-content:space-between; font-size:11px; color:var(--ink-dim)}
+  #sendBtn:hover{background:var(--gold-soft)}
+  #sendBtn:active{transform:scale(.97)}
+  #sendBtn:disabled{opacity:.4; cursor:default; transform:none; background:var(--gold)}
+  #meta{max-width:var(--max-w); margin:0 auto; padding:6px 20px 9px; display:flex; justify-content:space-between; font-size:11px; color:var(--ink-dim)}
   #notice{
-    display:none; max-width:var(--max-w); margin:0 auto; padding:10px 16px; font-size:13px; color:#e3b45f;
+    display:none; width:calc(100% - 24px); max-width:var(--max-w); margin:4px auto; padding:10px 16px; font-size:13px; color:#e3b45f;
+    border-radius:16px; background:rgba(201,162,39,.08); box-shadow:inset 0 0 0 .5px rgba(201,162,39,.28);
   }
   #notice.on{display:block}
-  #notice button{margin-left:10px; background:none; border:1px solid var(--gold); color:var(--gold-soft); border-radius:6px; padding:2px 10px; cursor:pointer; font-size:12px}
+  #notice button{margin-left:10px; border:0; border-radius:999px; background:rgba(201,162,39,.16); color:var(--gold-soft);
+    box-shadow:inset 0 .5px 0 rgba(255,255,255,.14); padding:3px 12px; cursor:pointer; font-size:12px}
+  #notice button:hover{background:rgba(201,162,39,.26)}
 
-  /* mobile */
-  #shade{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9}
+  /* mobile: the thread list becomes a glass drawer */
+  #shade{display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9}
   @media (max-width:900px){
-    #side{position:fixed; z-index:10; height:100%; transform:translateX(-100%)}
+    #side{
+      position:fixed; z-index:10; top:0; bottom:0; left:0; width:min(86vw,300px);
+      margin:max(8px, env(safe-area-inset-top)) 0 max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      border-radius:24px; background:var(--glass-solid); box-shadow:var(--rim), 0 20px 60px rgba(0,0,0,.6);
+      transform:translateX(calc(-100% - 90px));
+    }
     body.side-open #side{transform:translateX(0)}
     body.side-open #shade{display:block}
     #topbar{display:flex}
     #welcome{padding-top:6vh}
+  }
+  /* Reduce Transparency (System Settings > Accessibility > Display): solid surfaces, no blur */
+  @media (prefers-reduced-transparency:reduce){
+    :root{--glass:#1a1530; --glass-solid:#171327}
+    #side,#menuBtn,.chip,#composer,#qcmodal,#qcmodal .row button{-webkit-backdrop-filter:none; backdrop-filter:none}
+    #qcmodal{background:rgba(6,4,12,.9)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #side,#newBtn,.thread,.thread .del,#menuBtn,.msg.bot .qcbtn,#qcmodal .row button,.chip,#composer,#sendBtn{transition:none}
+    #scroll{scroll-behavior:auto}
   }
 </style>
 </head>

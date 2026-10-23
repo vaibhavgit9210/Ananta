@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0d0b14">
-<title>Ananta — endless counsel</title>
+<title>Ananta · endless counsel</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%23060a13%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2738%27%20text-anchor%3D%27middle%27%3E%E2%9C%B3%EF%B8%8F%3C%2Ftext%3E%3C%2Fsvg%3E">
 <meta name="description" content="A quiet place to think with the Gita, Homer, Plato, Aristotle and the Stoics. Free, no signup.">
 <style>
@@ -220,11 +220,11 @@
 <div id="side">
   <header>
     <div id="wordmark">ANANTA<span class="dev">अनन्त</span></div>
-    <div id="tagline">endless counsel — the Gita, Homer, Plato, Aristotle, the Stoics, and the rest of the old voices.</div>
+    <div id="tagline">endless counsel: the Gita, Homer, Plato, Aristotle, the Stoics, and the rest of the old voices.</div>
   </header>
   <button id="newBtn">✦ &nbsp;New thread</button>
   <div id="threads"></div>
-  <div id="sideFoot">Free service — up to <b>30 messages per thread</b>, 10 saved threads. Conversations live only in this browser.</div>
+  <div id="sideFoot">Free service: up to <b>30 messages per thread</b>, 10 saved threads. Conversations live only in this browser.</div>
 </div>
 <div id="shade"></div>
 
@@ -238,11 +238,11 @@
     <div id="welcome">
       <div class="glyph">❈</div>
       <h1>ANANTA</h1>
-      <div class="sub">Ask anything you would ask a wise friend. Ananta answers with the combined counsel of the Bhagavad Gita, the Mahabharata, Homer, the Greek tragedians, Plato, Aristotle and the Stoics — honestly, tensions included.</div>
+      <div class="sub">Ask anything you would ask a wise friend. Ananta answers with the combined counsel of the Bhagavad Gita, the Mahabharata, Homer, the Greek tragedians, Plato, Aristotle and the Stoics. Honestly, tensions included.</div>
       <button class="chip">How do I act well when the outcome isn't in my hands?<span class="src">Gita 2.47 · Epictetus</span></button>
       <button class="chip">Was Odysseus a good man, or just a clever one?<span class="src">Odyssey · Nicomachean Ethics</span></button>
       <button class="chip">What did Krishna actually tell Arjuna about fear and duty?<span class="src">Bhagavad Gita · Kurukshetra</span></button>
-      <button class="chip">What makes a life good, according to Aristotle — and would Plato agree?<span class="src">Nicomachean Ethics · The Republic</span></button>
+      <button class="chip">What makes a life good, according to Aristotle, and would Plato agree?<span class="src">Nicomachean Ethics · The Republic</span></button>
     </div>
     <div id="feed" hidden>
       <div id="thinking"><span class="d">●</span><span class="d">●</span><span class="d">●</span></div>
@@ -369,9 +369,9 @@
     input.disabled = pending || !!full;
     sendBtn.disabled = pending || !!full;
     input.placeholder = full
-      ? "This thread has reached its free limit — begin a new one."
+      ? "This thread has reached its free limit. Begin a new one."
       : "Ask Ananta…";
-    if (full) showNotice("Every dialogue must end so another can begin — this thread is full. Start a new thread to continue.", false);
+    if (full) showNotice("Every dialogue must end so another can begin. This thread is full. Start a new thread to continue.", false);
   }
 
   function renderAll(){ renderThreads(); renderFeed(); renderComposer(); }
@@ -439,7 +439,7 @@
     g.font = "italic " + size + "px Georgia, serif";
     for (var j = 0; j < lines.length; j++){ g.fillText(lines[j], 540, y); y += size * 1.55; }
     g.fillStyle = "#e3c463"; g.font = "38px Georgia, serif";
-    g.fillText("— Ananta", 540, y + 40);
+    g.fillText("Ananta", 540, y + 40);
     g.fillStyle = "#9d95a8"; g.font = "30px Georgia, serif";
     g.fillText("vaibhavkumar.is-a.dev/Ananta", 540, 1262);
     return c;
@@ -470,7 +470,7 @@
   /* ---------- actions ---------- */
   function newThread(){
     if (state.threads.length >= MAX_THREADS){
-      showNotice("Thread limit reached (" + MAX_THREADS + ") — delete an old thread from the list to make room.", false);
+      showNotice("Thread limit reached (" + MAX_THREADS + "). Delete an old thread from the list to make room.", false);
       return null;
     }
     var t = { id: Math.random().toString(36).slice(2)+Date.now().toString(36), title: "", messages: [] };
@@ -517,8 +517,8 @@
         save(); renderAll();
       } else if (res.status === 429){
         showNotice(res.j && res.j.limit
-          ? "Today's free allowance is spent — Ananta rests. Return tomorrow; the thread will be here."
-          : "Too many questions at once — a short pause, then try again.", true);
+          ? "Today's free allowance is spent: Ananta rests. Return tomorrow; the thread will be here."
+          : "Too many questions at once. A short pause, then try again.", true);
         renderComposer();
       } else {
         showNotice("All the free minds are busy at this moment. Wait a little, then try again.", true);
@@ -526,7 +526,7 @@
       }
     }).catch(function(){
       pending = false; thinking.className = "";
-      showNotice("Couldn't reach Ananta — check your connection and try again.", true);
+      showNotice("Couldn't reach Ananta. Check your connection and try again.", true);
       renderComposer();
     });
   }
@@ -559,7 +559,7 @@
   if (location.hash.indexOf("shot=chat") !== -1){
     state = { threads: [{ id:"demo", title:"On acting without attachment", messages: [
       { role:"user", content:"How do I act well when the outcome isn't in my hands?" },
-      { role:"assistant", content:"Krishna's answer to Arjuna is the sharpest ever given: *you have a right to your actions, never to the fruits of your actions* (Gita 2.47). The work is yours; the result belongs to a thousand causes you don't control. Anxiety comes from claiming ownership of the second while neglecting the first.\n\nEpictetus, a slave in Rome centuries later, drew the same line without ever reading the Gita: some things are up to us — judgment, effort, intention — and some are not. Peace is refusing to stake your worth on the wrong side of that line.\n\nWhat outcome are you gripping right now that was never yours to hold?" }
+      { role:"assistant", content:"Krishna's answer to Arjuna is the sharpest ever given: *you have a right to your actions, never to the fruits of your actions* (Gita 2.47). The work is yours; the result belongs to a thousand causes you don't control. Anxiety comes from claiming ownership of the second while neglecting the first.\n\nEpictetus, a slave in Rome centuries later, drew the same line without ever reading the Gita: some things are up to us (judgment, effort, intention) and some are not. Peace is refusing to stake your worth on the wrong side of that line.\n\nWhat outcome are you gripping right now that was never yours to hold?" }
     ]}], activeId:"demo" };
     save = function(){};
   }
